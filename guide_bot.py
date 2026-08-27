@@ -1,12 +1,14 @@
 import os
+import logging
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 BOT_TOKEN = os.environ.get("GUIDE_BOT_TOKEN")
+API_ID = os.environ.get("API_ID")
+API_HASH = os.environ.get("API_HASH")
+
 COLAB_LINK = "https://colab.research.google.com/drive/1b2hjzn6XlN1fYLPHS8lD-vwn6esrP3d3?usp=sharing"
 RENDER_DEPLOY_LINK = "https://render.com/deploy?repo=https://github.com/kunterk/TGBioUpdater"
-
-app = Client("guide_bot", bot_token=BOT_TOKEN)
 
 TEXTS = {
     "MY": {
@@ -32,37 +34,47 @@ TEXTS = {
     }
 }
 
-@app.on_message(filters.command("start"))
-async def start_cmd(client, message):
-    buttons = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🇲🇾 Bahasa Melayu", callback_data="lang_MY")],
-        [InlineKeyboardButton("🇮🇩 Bahasa Indonesia", callback_data="lang_ID")],
-        [InlineKeyboardButton("🇬🇧 English", callback_data="lang_ENG")]
-    ])
-    await message.reply_text(TEXTS["MY"]["welcome"], reply_markup=buttons)
+if not BOT_TOKEN:
+    logging.info("GUIDE_BOT_TOKEN tidak dijumpai. Skipping Guide Bot execution.")
+else:
+    app = Client(
+        "guide_bot",
+        api_id=int(API_ID) if API_ID else None,
+        api_hash=API_HASH,
+        bot_token=BOT_TOKEN
+    )
 
-@app.on_callback_query(filters.regex("^lang_"))
-async def lang_choice(client, callback):
-    lang = callback.data.split("_")[1]
-    buttons = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🖥️ Option A (Local PC)", callback_data=f"opt_A_{lang}")],
-        [InlineKeyboardButton("☁️ Option B (One-Click Render)", callback_data=f"opt_B_{lang}")],
-        [InlineKeyboardButton("🛠️ Option C (Manual Render)", callback_data=f"opt_C_{lang}")]
-    ])
-    await callback.message.edit_text(TEXTS[lang]["menu"], reply_markup=buttons)
+    @app.on_message(filters.command("start"))
+    async def start_cmd(client, message):
+        buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🇲🇾 Bahasa Melayu", callback_data="lang_MY")],
+            [InlineKeyboardButton("🇮🇩 Bahasa Indonesia", callback_data="lang_ID")],
+            [InlineKeyboardButton("🇬🇧 English", callback_data="lang_ENG")]
+        ])
+        await message.reply_text(TEXTS["MY"]["welcome"], reply_markup=buttons)
 
-@app.on_callback_query(filters.regex("^opt_"))
-async def opt_choice(client, callback):
-    _, opt, lang = callback.data.split("_")
-    msg_key = f"opt_{opt.lower()}"
-    text = TEXTS[lang][msg_key].format(colab=COLAB_LINK)
-    
-    buttons = []
-    if opt == "B":
-        buttons.append([InlineKeyboardButton("🚀 Deploy to Render", url=RENDER_DEPLOY_LINK)])
-    buttons.append([InlineKeyboardButton("🔙 Back", callback_data=f"lang_{lang}")])
-    
-    await callback.message.edit_text(text, reply_markup=buttons, disable_web_page_preview=True)
+    @app.on_callback_query(filters.regex("^lang_"))
+    async def lang_choice(client, callback):
+        lang = callback.data.split("_")[1]
+        buttons = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🖥️ Option A (Local PC)", callback_data=f"opt_A_{lang}")],
+            [InlineKeyboardButton("☁️ Option B (One-Click Render)", callback_data=f"opt_B_{lang}")],
+            [InlineKeyboardButton("🛠️ Option C (Manual Render)", callback_data=f"opt_C_{lang}")]
+        ])
+        await callback.message.edit_text(TEXTS[lang]["menu"], reply_markup=buttons)
 
-if __name__ == "__main__":
-    app.run()
+    @app.on_callback_query(filters.regex("^opt_"))
+    async def opt_choice(client, callback):
+        _, opt, lang = callback.data.split("_")
+        msg_key = f"opt_{opt.lower()}"
+        text = TEXTS[lang][msg_key].format(colab=COLAB_LINK)
+        
+        buttons = []
+        if opt == "B":
+            buttons.append([InlineKeyboardButton("🚀 Deploy to Render", url=RENDER_DEPLOY_LINK)])
+        buttons.append([InlineKeyboardButton("🔙 Back", callback_data=f"lang_{lang}")])
+        
+        await callback.message.edit_text(text, reply_markup=buttons, disable_web_page_preview=True)
+
+    if __name__ == "__main__":
+        app.run()
