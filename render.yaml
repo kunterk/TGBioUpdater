@@ -15,7 +15,5 @@ services:
         sync: false
       - key: SESSION_STRING
         sync: false
-      - key: GUIDE_BOT_TOKEN
-        value: 8715006390:AAHPJRnu1cS9gCOtMnRtrWtx_2kzy3GbXY0
       - key: PYTHON_VERSION
         value: 3.13.0
