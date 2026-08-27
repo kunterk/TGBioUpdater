@@ -3,7 +3,7 @@ services:
     name: tg-bio-scrobbler
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: python runner.py
     envVars:
       - key: API_ID
         sync: false
@@ -14,4 +14,6 @@ services:
       - key: LASTFM_USERNAME
         sync: false
       - key: SESSION_STRING
+        sync: false
+      - key: GUIDE_BOT_TOKEN
         sync: false
