@@ -1,9 +1,10 @@
 services:
-  - type: worker
+  - type: web
     name: tg-bio-scrobbler
     env: python
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python runner.py
+    startCommand: python -m http.server $PORT & python runner.py
     envVars:
       - key: API_ID
         sync: false
