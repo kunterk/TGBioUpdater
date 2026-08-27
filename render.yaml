@@ -17,3 +17,5 @@ services:
         sync: false
       - key: GUIDE_BOT_TOKEN
         sync: false
+      - key: PYTHON_VERSION
+        value: 3.13.0
